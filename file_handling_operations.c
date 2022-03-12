@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-FILE *fp1, *fp2;
-struct Library x, p, temp;
+
 
 struct Library
 {
@@ -9,6 +8,9 @@ struct Library
     int bk_id;
     int bk_price;
 };
+
+FILE *fp1, *fp2;
+struct Library x, p, temp;
 
 int read_lines()
 {
