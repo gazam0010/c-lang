@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-
-
 struct Library
 {
     char bk_name[100];
