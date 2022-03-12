@@ -49,7 +49,6 @@ int search_record(int id)
 int main()
 {
     int i, choice, price, del_id;
-    char bk_name[100];
     int lines = 0;
 
     printf("\n\n## Library Management ##\n");
