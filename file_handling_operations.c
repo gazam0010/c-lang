@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 
 FILE *fp1, *fp2;
 struct Library x, p, temp;
@@ -9,12 +10,13 @@ struct Library
     char bk_name[100];
     int bk_id;
     int bk_price;
+    char publish[100];
 };
 
 int read_lines()
 {
     int i, lines;
-    fp1 = fopen("lib.txt", "rb");
+    fp1 = fopen("lib.dat", "rb");
 
     char temp1;
 
@@ -31,11 +33,11 @@ int read_lines()
 int search_record(int id)
 {
     int i, lines, found_count1 = 0;
-    fp1 = fopen("lib.txt", "r+");
+    fp1 = fopen("lib.dat", "r+");
 
     for (i = 1; i <= lines; i++)
     {
-        fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+        fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
 
         if (p.bk_id == id)
         {
@@ -70,40 +72,51 @@ int main()
     case 1:
 
         printf("Insert a new record");
-        int found_record, end_id = 0;
-        
+        int end_id = 0;
+
         lines = read_lines();
+
         if (lines > 0)
         {
-            fp1 = fopen("lib.txt", "rb");
+            fp1 = fopen("lib.dat", "rb");
             for (i = 1; i <= lines; i++)
             {
-                fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+                fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
                 if (i == lines)
                 {
                     end_id = p.bk_id;
                 }
             }
-             fclose(fp1);
+            fclose(fp1);
         }
 
         printf("\nEnter book name: ");
         scanf("%s", x.bk_name);
-        fp1 = fopen("lib.txt", "ab");
+
+        fp1 = fopen("lib.dat", "ab");
 
         end_id++;
+
+        printf("Enter publisher name: ");
+        scanf("%s", &x.publish);
 
         printf("Enter price: ");
         scanf("%d", &x.bk_price);
 
-            fprintf(fp1, "%s %d %d", x.bk_name, end_id, x.bk_price);
-            fprintf(fp1, "\n");
-            fclose(fp1);
+        if (fprintf(fp1, "%d %s %s %d", end_id, x.bk_name, x.publish, x.bk_price))
+        {
             printf("\nBook record successfully entered!\n");
+            fprintf(fp1, "\n");
+        }
+        else
+        {
+            printf("\nERROR: Some error occured!\n");
+        }
 
-            fclose(fp1);
-            main();
+        fclose(fp1);
 
+        main();
+        getch();
         break;
 
     case 2:
@@ -114,16 +127,16 @@ int main()
 
         lines = read_lines();
 
-        fp1 = fopen("lib.txt", "r+");
+        fp1 = fopen("lib.dat", "r+");
         fp2 = fopen("copy.txt", "a+");
 
         for (i = 1; i <= lines; i++)
         {
-            fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+            fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
 
             if (p.bk_id != del_id)
             {
-                fprintf(fp2, "%s %d %d", p.bk_name, p.bk_id, p.bk_price);
+                fprintf(fp2, "%d %s %s %d", p.bk_id, p.bk_name, p.publish, p.bk_price);
                 fprintf(fp2, "\n");
             }
             if (p.bk_id == del_id)
@@ -134,17 +147,17 @@ int main()
         fclose(fp1);
         fclose(fp2);
 
-        remove("lib.txt");
-        rename("copy.txt", "lib.txt");
+        remove("lib.dat");
+        rename("copy.txt", "lib.dat");
         if (a == 0)
         {
             printf("\nRecord successfully deleted!\n");
         }
         else
         {
-            printf("\nERROR: Either record not found or some other error occured!\n");
+            printf("\nERROR: Either record not found or some other error occured!\n\n");
         }
-
+        getch();
         break;
 
     case 3:
@@ -157,16 +170,18 @@ int main()
 
         lines = read_lines();
 
-        fp1 = fopen("lib.txt", "r+");
+        fp1 = fopen("lib.dat", "r+");
 
         for (i = 1; i <= lines; i++)
         {
-            fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+            fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
 
             if (p.bk_id == view_id)
             {
                 found_count = 1;
-                printf("\n\nBook name: %s \n Book id: %d \n Book price: %d", p.bk_name, p.bk_id, p.bk_price);
+                printf("\n------------------------------------------\n");
+                printf("Book ID: %d \n Book Name: %s \n Publisher: %s \n Book Price: %d", p.bk_id, p.bk_name, p.publish, p.bk_price);
+                printf("\n------------------------------------------");
                 break;
             }
         }
@@ -176,7 +191,7 @@ int main()
         }
 
         fclose(fp1);
-
+        getch();
         break;
 
     case 4:
@@ -186,7 +201,7 @@ int main()
         printf("Enter a book ID to edit or modify its record: ");
         scanf("%d", &edit_id);
 
-        int found_count1;
+        int found_count1, modified = 0;
 
         lines = read_lines();
 
@@ -199,32 +214,40 @@ int main()
         }
         if (found_count1 == 1)
         {
-
             printf("\nEnter new records of book ID %d below \n", edit_id);
 
             printf("\nEnter new book name: ");
             scanf("%s", temp.bk_name);
+
+            printf("Enter new publisher name: ");
+            scanf("%s", temp.publish);
 
             printf("Enter new price: ");
             scanf("%d", &temp.bk_price);
 
             lines = read_lines();
 
-            fp1 = fopen("lib.txt", "r+");
+            fp1 = fopen("lib.dat", "r+");
             fp2 = fopen("temp.txt", "a+");
 
             for (i = 1; i <= lines; i++)
             {
-                fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+                fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
 
                 if (p.bk_id != edit_id)
                 {
-                    fprintf(fp2, "%s %d %d", p.bk_name, p.bk_id, p.bk_price);
+                    fprintf(fp2, "%d %s %s %d", p.bk_id, p.bk_name, p.publish, p.bk_price);
+                    fprintf(fp2, "\n");
+                }
+                if (p.bk_id == edit_id)
+                {
+                    modified = 1;
+                    fprintf(fp2, "%d %s %s %d", edit_id, temp.bk_name, temp.publish, temp.bk_price);
                     fprintf(fp2, "\n");
                 }
             }
 
-            if (fprintf(fp2, "%s %d %d", temp.bk_name, edit_id, temp.bk_price) && fprintf(fp2, "\n"))
+            if (modified == 1)
             {
                 printf("\nRecord successfully modified! \n");
             }
@@ -232,26 +255,36 @@ int main()
             fclose(fp1);
             fclose(fp2);
 
-            remove("lib.txt");
-            rename("temp.txt", "lib.txt");
+            remove("lib.dat");
+            rename("temp.txt", "lib.dat");
         }
-
+        getch();
         break;
 
     case 5:
 
-        printf("\n\n List all record\n");
+        printf("\n\n List all records\n");
 
         lines = read_lines();
 
-        fp1 = fopen("lib.txt", "rb");
-        for (i = 1; i <= lines; i++)
+        if (lines > 0)
         {
-            fscanf(fp1, "%s %d %d", p.bk_name, &p.bk_id, &p.bk_price);
+            fp1 = fopen("lib.dat", "rb");
+            for (i = 1; i <= lines; i++)
+            {
+                fscanf(fp1, "%d %s %s %d", &p.bk_id, p.bk_name, p.publish, &p.bk_price);
 
-            printf("\n\nBook name: %s \n Book id: %d \n Book price: %d", p.bk_name, p.bk_id, p.bk_price);
+                printf("\n------------------------------------------\n");
+                printf("Book ID: %d \n Book Name: %s \n Publisher: %s \n Book Price: %d", p.bk_id, p.bk_name, p.publish, p.bk_price);
+                printf("\n------------------------------------------");
+            }
+            fclose(fp1);
         }
-        fclose(fp1);
+        else
+        {
+            printf("\nERROR: No record found!\n");
+        }
+        getch();
         break;
 
     case 6:
